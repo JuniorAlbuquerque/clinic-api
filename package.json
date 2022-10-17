@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "env-cmd -f ./.env.production npx ttsc -p tsconfig.json",
-    "start": "node index.js",
+    "start": "env-cmd -f ./.env.production tsnd --prefer-ts true --no-notify -r tsconfig-paths/register --watch src --transpile-only --ignore-watch node_modules --respawn src/index.ts",
     "dev": "env-cmd -f ./.env tsnd --prefer-ts true --no-notify -r tsconfig-paths/register --watch src --transpile-only --ignore-watch node_modules --respawn src/index.ts"
   },
   "dependencies": {
