@@ -14,6 +14,9 @@ export class User {
   name: string
 
   @Field((type) => String)
+  role: string
+
+  @Field((type) => String)
   password: string
 
   @Field((type) => Date)

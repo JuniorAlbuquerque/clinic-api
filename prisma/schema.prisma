@@ -5,17 +5,139 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  theme    = "default"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+enum UserRoles {
+  ADMIN
+  PROFESSIONAL
+  VIEWER
+}
+
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String
-  password String
-  createdAt DateTime @default(now())
-  updatedAt DateTime?
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  password  String
+  role      UserRoles @default(VIEWER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  appointments      Appointment[]
+  patients_packages PatientPackage[]
+  clinic            Clinic?          @relation(fields: [clinic_id], references: [id])
+  clinic_id         Int?
+
+  @@map("users")
+}
+
+model Clinic {
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+
+  color      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  patients   Patient[]
+  ppointment Appointment[]
+  users      User[]
+
+  @@map("clinic")
+}
+
+model Patient {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  telephone String
+  birthdate String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  appointments      Appointment[]
+  patients_packages PatientPackage[]
+  clinic            Clinic?          @relation(fields: [clinic_id], references: [id])
+  clinic_id         Int?
+
+  @@map("patients")
+}
+
+model Package {
+  id           Int    @id @default(autoincrement())
+  name         String
+  quantity     Int
+  treatment_id Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  treatment         Treatment        @relation(fields: [treatment_id], references: [id])
+  patients_packages PatientPackage[]
+
+  @@map("packages")
+}
+
+model Appointment {
+  id                 Int      @id @default(autoincrement())
+  patient_id         Int
+  user_id            Int
+  patient_package_id Int?
+  date               DateTime
+  initial_hour       String
+  end_hour           String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  value              Float?
+
+  patient           Patient         @relation(fields: [patient_id], references: [id])
+  professional      User            @relation(fields: [user_id], references: [id])
+  patients_packages PatientPackage? @relation(fields: [patient_package_id], references: [id])
+
+  clinic    Clinic? @relation(fields: [clinic_id], references: [id])
+  clinic_id Int?
+
+  @@map("appointments")
+}
+
+model PatientPackage {
+  id         Int @id @default(autoincrement())
+  package_id Int
+  patient_id Int
+  user_id    Int
+
+  initialDate DateTime
+  endData     DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [user_id], references: [id])
+  patient Patient @relation(fields: [patient_id], references: [id])
+  package Package @relation(fields: [package_id], references: [id])
+
+  appointments Appointment[]
+
+  @@map("patients_packages")
+}
+
+model Treatment {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Package   Package[]
+
+  @@map("treatments")
 }
