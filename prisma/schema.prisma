@@ -5,10 +5,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  theme    = "default"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   theme    = "default"
+// }
 
 datasource db {
   provider = "postgresql"
@@ -19,6 +19,23 @@ enum UserRoles {
   ADMIN
   PROFESSIONAL
   VIEWER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  BLOCK
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  MONEY
+}
+
+enum AppointmentStatus {
+  PENDING
+  PATIENT_MISSED
+  CONCLUDED
 }
 
 model User {
@@ -44,12 +61,12 @@ model Clinic {
   name    String
   address String
 
-  color      String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  patients   Patient[]
-  ppointment Appointment[]
-  users      User[]
+  color        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  patients     Patient[]
+  appointments Appointment[]
+  users        User[]
 
   @@map("clinic")
 }
@@ -88,16 +105,17 @@ model Package {
 }
 
 model Appointment {
-  id                 Int      @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   patient_id         Int
   user_id            Int
   patient_package_id Int?
   date               DateTime
   initial_hour       String
   end_hour           String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
   value              Float?
+  presence           AppointmentStatus @default(PENDING)
 
   patient           Patient         @relation(fields: [patient_id], references: [id])
   professional      User            @relation(fields: [user_id], references: [id])
@@ -115,11 +133,15 @@ model PatientPackage {
   patient_id Int
   user_id    Int
 
-  initialDate DateTime
-  endData     DateTime
+  initialDate      DateTime
+  endData          DateTime
+  payment_date     Int?
+  payment_schedule Boolean?
+  payment_status   PaymentStatus @default(PENDING)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  payment_type PaymentType?
 
   user    User    @relation(fields: [user_id], references: [id])
   patient Patient @relation(fields: [patient_id], references: [id])
