@@ -1,33 +1,10 @@
-import { User } from '@app/models/User'
+import { User, UserInputData } from '@app/models/User'
 import { Context } from '@app/services/prismaContext/types'
-import { IsEmail } from 'class-validator'
-import {
-  Arg,
-  Authorized,
-  Ctx,
-  Field,
-  InputType,
-  Mutation,
-  Query,
-  Resolver
-} from 'type-graphql'
-import { hash } from 'bcryptjs'
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql'
+import { UserController } from '@app/controllers/User'
 
 type RequestError = {
   message: string
-}
-
-@InputType()
-class UserInputData {
-  @Field()
-  @IsEmail()
-  email: string
-
-  @Field()
-  password: string
-
-  @Field()
-  name: string
 }
 
 @Resolver()
@@ -45,28 +22,11 @@ export class UserResolver {
     return dbUser
   }
 
-  @Mutation((returns) => User)
+  @Mutation(() => User)
   async signUp(
     @Arg('data') data: UserInputData,
     @Ctx() ctx: Context
   ): Promise<User> {
-    const user = await ctx.prisma.user.findUnique({
-      where: {
-        email: data.email
-      }
-    })
-
-    if (user) {
-      throw new Error('User already created.')
-    }
-
-    const hashedPassword = await hash(data.password, 10)
-
-    return ctx.prisma.user.create({
-      data: {
-        ...data,
-        password: hashedPassword
-      }
-    })
+    return UserController.createUser(ctx, data)
   }
 }

@@ -52,7 +52,3 @@ export async function getWeekAppointmentsByUser(
 
   return appointments
 }
-
-// export async function getClinicInfo() {
-
-// }

@@ -1,5 +1,11 @@
 import { IsEmail } from 'class-validator'
-import { Field, ID, ObjectType } from 'type-graphql'
+import { Field, ID, InputType, ObjectType } from 'type-graphql'
+
+enum UserRoles {
+  ADMIN = 'ADMIN',
+  PROFESSIONAL = 'PROFESSIONAL',
+  VIEWER = 'VIEWER'
+}
 
 @ObjectType()
 export class User {
@@ -19,6 +25,9 @@ export class User {
   @Field((type) => String)
   password: string
 
+  @Field((type) => ID)
+  clinic_id: number | null
+
   @Field((type) => Date)
   createdAt: Date
 
@@ -27,4 +36,23 @@ export class User {
 
   @Field((type) => Date)
   deletedAt: Date | null
+}
+
+@InputType()
+export class UserInputData {
+  @Field()
+  @IsEmail()
+  email: string
+
+  @Field()
+  password: string
+
+  @Field()
+  name: string
+
+  @Field()
+  clinic_id?: number
+
+  @Field()
+  role: UserRoles
 }
